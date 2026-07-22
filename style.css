@@ -1,18 +1,28 @@
-.api-preset-area{
-    margin:16px 0;
-    padding:14px;
-    border:1px solid #555;
-    border-radius:10px;
+
+.api-preset-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
 }
-.preset-btn{
-    margin:4px;
-    padding:5px 10px;
+.api-preset-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: var(--SmartThemeBlurTintColor);
+    border-radius: 5px;
+    margin-bottom: 5px;
 }
-.row-flex{
-    margin-top:10px;
-    display:flex;
-    gap:8px;
+.api-preset-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
-#preset_title{
-    flex:1;
+.api-preset-item-name {
+    font-weight: bold;
+}
+.api-preset-item-url {
+    font-size: 0.85em;
+    opacity: 0.8;
 }
