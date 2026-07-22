@@ -1,52 +1,66 @@
-// @🍮
-(function() {
-    'use strict';
-    // 防止重复运行
-    if (window.isPuddingScoutRunning) return;
-    window.isPuddingScoutRunning = true;
+import { getContext } from '../../extensions.js';
+const context = getContext();
+const extName = 'api-preset-manager';
 
-    console.log('🍮的侦察兵已经出发！');
+// 读取保存的预设
+function getPresetList() {
+    if (!context.extensionSettings[extName]) context.extensionSettings[extName] = {};
+    if (!context.extensionSettings[extName].list) context.extensionSettings[extName].list = [];
+    return context.extensionSettings[extName].list;
+}
 
-    const findElement = () => {
-        console.log('侦察兵正在搜寻 "自定义端点"...');
-        const elements = document.querySelectorAll('div, span, label, p');
-        for (const el of elements) {
-            if (el.textContent && el.textContent.includes('自定义端点（基础 URL）')) {
-                // 找到了！
-                console.clear(); // 清理一下，只看最重要的信息
-                console.log('✅ 🍮！我找到它了！在这里：', el);
-                
-                // 我们需要看它的“家谱”，才能找到放按钮的最好位置
-                console.log('--- 下面是它的家谱信息 ---');
-                let current = el;
-                for(let i = 1; i <= 5 && current.parentElement; i++) {
-                    console.log(`这是它的第 ${i} 层父级，一个 ${current.parentElement.tagName} 元素:`, current.parentElement.outerHTML);
-                    current = current.parentElement;
-                }
-                console.log('--------------------------');
-                
-                // 高亮它，让你能看到
-                el.style.border = '3px solid #ff69b4';
-                el.style.transition = 'all 0.3s';
-                console.log('我已经用粉色框框把它标出来了！');
-                
-                alert('🍮！我找到它了！请打开 F12 控制台，把 Console 里的信息全部发给我！');
+// 储存预设
+function savePreset(name, url, key, modelName) {
+    const arr = getPresetList();
+    arr.push({ name, url, key, modelName });
+    context.saveSettingsDebounced();
+    renderUI();
+    toastr.success('保存完成');
+}
 
-                return true; // 任务完成
-            }
-        }
-        return false; // 这次没找到
-    };
+// 一键套用API配置
+function applyConfig(item) {
+    $('#custom_endpoint').val(item.url);
+    $('#api_key').val(item.key);
+    context.selectModel(item.modelName);
+    toastr.success('已切换API预设');
+}
 
-    // 我们耐心等待页面加载完成
-    let attempts = 0;
-    const maxAttempts = 20; // 最多等10秒
-    const interval = setInterval(() => {
-        if (findElement() || attempts++ > maxAttempts) {
-            clearInterval(interval);
-            if (attempts > maxAttempts) {
-                console.error('😭 🍮对不起，我找了10秒还是没找到...是不是文字不完全匹配？或者它还没加载出来？');
-            }
-        }
-    }, 500);
-})();
+// 渲染按钮列表
+function renderUI() {
+    let html = '';
+    getPresetList().forEach(item => {
+        html += `<button class="preset-btn">${item.name}</button>`;
+    });
+    $('#preset_box').html(html);
+    $('.preset-btn').on('click', function () {
+        const title = $(this).text();
+        const data = getPresetList().find(x => x.name === title);
+        applyConfig(data);
+    })
+}
+
+// 在API区域插入面板
+jQuery(() => {
+    const block = `
+    <div class="api-preset-area">
+        <h4>API预设管理器</h4>
+        <div id="preset_box"></div>
+        <div class="row-flex">
+            <input id="preset_title" placeholder="命名这个配置">
+            <button id="save_current_cfg">保存当前API设置</button>
+        </div>
+    </div>
+    `;
+    $('#api_config_block').after(block);
+
+    $('#save_current_cfg').on('click', () => {
+        const title = $('#preset_title').val().trim();
+        if (!title) return toastr.warning('请填写名字');
+        const endpoint = $('#custom_endpoint').val();
+        const apikey = $('#api_key').val();
+        const model = context.getSelectedModel();
+        savePreset(title, endpoint, apikey, model);
+    });
+    renderUI();
+})

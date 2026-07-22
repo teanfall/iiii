@@ -1,0 +1,11 @@
+{
+    "display_name": "API配置预设管理",
+    "name": "api-preset-manager",
+    "loading_order": 20,
+    "requires": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "teanfall",
+    "version": "1.0.0",
+    "homePage": "https://github.com/teanfall/iiii"
+}
